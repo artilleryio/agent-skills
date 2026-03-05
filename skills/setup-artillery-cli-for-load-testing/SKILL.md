@@ -49,15 +49,11 @@ Based on detected package manager:
 | bun | `bun add -D artillery` |
 | non-JS project | No install. Use `npx artillery@latest` to run. |
 
-If the user chose **(B) Playwright**, also install the Playwright engine:
+If the user chose **(B) Playwright**, also install Playwright browsers (the Playwright engine is included in Artillery — no separate package needed):
 
-| Package manager | Command |
-|---|---|
-| npm | `npm install -D @artilleryio/engine-playwright` |
-| pnpm | `pnpm add -D @artilleryio/engine-playwright` |
-| yarn | `yarn add -D @artilleryio/engine-playwright` |
-| bun | `bun add -D @artilleryio/engine-playwright` |
-| non-JS | `npx -y playwright install` (Playwright browsers needed) |
+```bash
+npx playwright install
+```
 
 ## Step 4: Write the test script
 
@@ -66,7 +62,7 @@ Create the test as a **TypeScript file**. Place it at a sensible location (e.g. 
 ### Path A: HTTP endpoint test
 
 ```typescript
-import type { Config, Scenario, HttpFlow } from "artillery";
+import type { Config, Scenario } from "artillery";
 
 export const config: Config = {
   target: "TARGET_URL",
@@ -79,14 +75,13 @@ export const config: Config = {
   ],
 };
 
-const flow: HttpFlow = [
-  { get: { url: "/ENDPOINT" } },
-];
-
 export const scenarios: Scenario[] = [
   {
     name: "SCENARIO_NAME",
-    flow,
+    engine: "http",
+    flow: [
+      { get: { url: "/ENDPOINT" } },
+    ],
   },
 ];
 ```
@@ -101,8 +96,7 @@ Adapt this template:
 ### Path B: Playwright browser test
 
 ```typescript
-import type { Config, Scenario } from "artillery";
-import type { Page } from "@artilleryio/engine-playwright";
+import type { Config, Scenario, PlaywrightTestFunction } from "artillery";
 
 export const config: Config = {
   target: "TARGET_URL",
@@ -118,12 +112,7 @@ export const config: Config = {
   },
 };
 
-export async function testFunction(
-  page: Page,
-  vuContext: { vars: Record<string, any>; scenario: any },
-  events: any,
-  test: { step: (name: string, fn: () => Promise<void>) => Promise<void> }
-) {
+export const testFunction: PlaywrightTestFunction = async (page, vuContext, events, test) => {
   await test.step("Go to homepage", async () => {
     await page.goto("TARGET_URL");
     await page.waitForLoadState("networkidle");
@@ -135,7 +124,7 @@ export async function testFunction(
     // await page.fill('#email', 'test@example.com');
     // await page.waitForURL('**/dashboard');
   });
-}
+};
 
 export const scenarios: Scenario[] = [
   {
@@ -198,8 +187,8 @@ Tell the user:
 
 - `export const config: Config` — target URL, phases, engine config, plugins
 - `export const scenarios: Scenario[]` — array of test scenarios
-- HTTP flows: array of `{ get: { url } }`, `{ post: { url, json } }`, `{ put: ... }`, `{ delete: ... }` etc.
+- HTTP scenarios: set `engine: "http"`, then `flow` is auto-typed — `{ get: { url } }`, `{ post: { url, json } }`, `{ put: ... }`, `{ delete: ... }`, `{ log: ... }`, `{ think: ... }`, `{ loop: [...] }`
 - Playwright scenarios: set `engine: "playwright"` and `testFunction: "functionName"`, export the function
-- Playwright testFunction signature: `async function name(page, vuContext, events, test)`
+- Playwright testFunction: `export const fn: PlaywrightTestFunction = async (page, vuContext, events, test) => { ... }` — all params auto-typed
 - `test.step(name, fn)` — labels steps for reporting
-- Types available: `import type { Config, Scenario, HttpFlow } from "artillery"`
+- Types available: `import type { Config, Scenario, PlaywrightTestFunction } from "artillery"`
