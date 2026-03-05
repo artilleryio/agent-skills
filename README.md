@@ -1,12 +1,12 @@
-# Artillery agent-skills
+# Artillery Agent Skills
 
-A collection of AI agent skills for Artillery. All skills follow the [Agent Skills](https://agentskills.io/) format.
+A collection of AI agent skills for Artillery. All skills follow the [Agent Skills](https://agentskills.io/) format and use Tessl for automated linting & evaluation.
 
 ## Available skills
 
 ### `setup-artillery-cli-for-load-testing` - quickstart onboarding for load testing
 
-See Tessl's report for this skill: [tessl.io/setup-artillery-cli-for-load-testing](https://tessl.io/registry/skills/github/artilleryio/agent-skills/setup-artillery-cli-for-load-testing/review)
+See Tessl's report: [tessl.io/setup-artillery-cli-for-load-testing](https://tessl.io/registry/skills/github/artilleryio/agent-skills/setup-artillery-cli-for-load-testing/review)
 
 **Use when**: adding load testing with Artillery to a new JS/TS-based project.
 
