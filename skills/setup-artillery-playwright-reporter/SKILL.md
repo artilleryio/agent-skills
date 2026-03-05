@@ -16,7 +16,7 @@ allowed-tools: Bash Read Write Glob Grep
 
 # Artillery: Set up the Playwright reporter
 
-You are setting up the Artillery Playwright reporter (https://artillery.io) for an existing Playwright E2E test suite. This reporter sends test results to Artillery Cloud for real-time viewing in a web dashboard. Follow the steps below. Ask the user questions at each decision point marked with DECISION.
+You are setting up the Artillery Playwright reporter (https://artillery.io) for an existing Playwright E2E test suite. Follow the steps below. Ask the user questions at each decision point marked with DECISION.
 
 ## Step 1: Detect environment
 
@@ -32,65 +32,23 @@ DECISION — If multiple `playwright.config.ts` files exist, ask the user which 
 
 ## Step 2: Install the reporter
 
-Install `@artilleryio/playwright-reporter` as a dev dependency using the detected package manager, in the correct workspace if applicable:
-
-| Package manager | Command |
-|---|---|
-| npm | `npm install -D @artilleryio/playwright-reporter` |
-| pnpm | `pnpm add -D @artilleryio/playwright-reporter` |
-| yarn | `yarn add -D @artilleryio/playwright-reporter` |
-| bun | `bun add -D @artilleryio/playwright-reporter` |
-
-In a monorepo, run the install command in the workspace that contains the Playwright test suite (e.g. `pnpm add -D --filter <workspace> @artilleryio/playwright-reporter`).
+Install `@artilleryio/playwright-reporter` as a dev dependency using the detected package manager. In a monorepo, run the install in the workspace that contains the Playwright test suite (e.g. `pnpm add -D --filter <workspace> @artilleryio/playwright-reporter`).
 
 ## Step 3: Configure the reporter in playwright.config.ts
 
-Add `@artilleryio/playwright-reporter` to the `reporter` array in `playwright.config.ts`.
+Add `@artilleryio/playwright-reporter` to the beginning of the `reporter` array in `playwright.config.ts`. If no `reporter` section exists yet, create one. Merge with any existing reporters — do not remove them.
 
-### If a `reporter` section already exists
-
-Add the Artillery reporter to the beginning of the existing array.
-
-Before:
-```typescript
-export default defineConfig({
-  reporter: [['html', { open: 'never' }], ['dot']],
-});
-```
-
-After:
 ```typescript
 export default defineConfig({
   reporter: [
-    ['@artilleryio/playwright-reporter', {}],
-    ['html', { open: 'never' }],
+    ['@artilleryio/playwright-reporter', { name: 'My E2E Suite' }],
+    ['html', { open: 'never' }], // keep any existing reporters
     ['dot'],
   ],
 });
 ```
 
-### If no `reporter` section exists
-
-Add a `reporter` property to the `defineConfig` object:
-
-```typescript
-export default defineConfig({
-  // ... existing config ...
-  reporter: [
-    ['@artilleryio/playwright-reporter', {}],
-  ],
-});
-```
-
-### Reporter options
-
-The reporter accepts an optional `name` property to label the test suite in Artillery Cloud:
-
-```typescript
-['@artilleryio/playwright-reporter', { name: 'My E2E Suite' }]
-```
-
-Use a descriptive name based on the project or workspace name.
+The reporter accepts an optional `name` property to label the test suite in Artillery Cloud. Use a descriptive name based on the project or workspace name.
 
 ## Step 4: Set up Artillery Cloud API key
 
@@ -115,9 +73,8 @@ Run the Playwright test suite to verify the reporter works. Use the project's ex
 npx playwright test
 ```
 
-The Artillery Playwright reporter will print a URL to the Artillery Cloud dashboard where the test results can be viewed in real time.
+Once complete, share the following with the user:
 
-Tell the user:
-- Check the Artillery Cloud URL printed in the terminal to view the test report.
-- The reporter runs alongside other configured reporters — existing HTML/dot/JSON reporters continue to work as before.
+- The Artillery Cloud URL printed in the terminal links to the live test report.
+- Existing reporters (HTML, dot, JSON, etc.) continue to work alongside the Artillery reporter.
 - Every subsequent `npx playwright test` run will automatically report to Artillery Cloud as long as the API key is set.
