@@ -4,7 +4,13 @@ A collection of AI agent skills for Artillery. All skills follow the [Agent Skil
 
 ## Available skills
 
-### `setup-artillery-cli-for-load-testing` - quickstart onboarding for load testing
+### `setup-artillery-cli-for-load-testing` - set up Artillery CLI for load testing
+
+Install with:
+
+```sh
+npx skills add artilleryio/agent-skills --skill setup-artillery-cli-for-load-testing
+```
 
 See Tessl's report: [tessl.io/setup-artillery-cli-for-load-testing](https://tessl.io/registry/skills/github/artilleryio/agent-skills/setup-artillery-cli-for-load-testing/review)
 
@@ -13,6 +19,12 @@ See Tessl's report: [tessl.io/setup-artillery-cli-for-load-testing](https://tess
 **Outcomes**: Artillery CLI installed in your current project (or an appropriate monorepo workspace), Artillery Cloud reporting integration is set up, and a simple initial load testing script is created - for a HTTP API or a web app (with Playwright).
 
 ### `setup-artillery-playwright-reporter` - add Artillery Cloud reporting to Playwright E2E tests
+
+Install with:
+
+```sh
+npx skills add artilleryio/agent-skills --skill setup-artillery-playwright-reporter
+```
 
 See Tessl's report: [tessl.io/setup-artillery-playwright-reporter](https://tessl.io/registry/skills/github/artilleryio/agent-skills/setup-artillery-playwright-reporter/review)
 
