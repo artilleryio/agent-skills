@@ -1,8 +1,8 @@
 ---
 name: convert-artillery-yaml-to-ts
 description: >-
-  Convert existing Artillery YAML scripts to TypeScript or ESM JavaScript.
-  Use when the user wants to migrate Artillery test scripts from YAML to TS/JS for better IDE support, type checking, and composability.
+  Convert existing Artillery YAML scripts to TypeScript or ESM JavaScript, auto-detecting the best output format, resolving YAML anchors by inlining, type-annotating exports, and verifying the output via tsc or node --check.
+  Use when the user wants to migrate, rewrite, or translate Artillery load-test scripts from YAML to TS/JS for better IDE support, type checking, and composability.
 compatibility: Requires Node.js. Input must be an Artillery YAML script.
 metadata:
   author: artilleryio
@@ -43,25 +43,11 @@ For each Artillery YAML file, read it and convert to a JS/TS module. The mapping
 
 ### Top-level key mapping
 
-| YAML key | JS/TS export |
-|---|---|
-| `config:` | `export const config = { ... }` |
-| `scenarios:` | `export const scenarios = [ ... ]` |
-| `before:` | `export const before = { ... }` |
-| `after:` | `export const after = { ... }` |
-
-### Value mapping rules
-
-- Strings stay strings (quote with double quotes)
-- Numbers stay numbers
-- Arrays stay arrays
-- Nested objects stay objects
-- `processor` fields: keep as-is (string reference)
-- Artillery template expressions like `{{ authToken }}` stay as literal strings: `"{{ authToken }}"`
+Each top-level YAML key becomes a named export: `config` → `export const config = { ... }`, `scenarios` → `export const scenarios = [ ... ]`, `before`/`after` → `export const before/after = { ... }`. `before` and `after` have no dedicated Artillery types and are exported untyped.
 
 ### TypeScript output
 
-If outputting `.ts`, add type imports and annotations:
+Add type imports and annotations for `config` and `scenarios`:
 
 ```typescript
 import type { Config, Scenario } from "artillery";
@@ -69,8 +55,6 @@ import type { Config, Scenario } from "artillery";
 export const config: Config = { ... };
 export const scenarios: Scenario[] = [ ... ];
 ```
-
-`before` and `after` do not have dedicated Artillery types — export them untyped.
 
 ### ESM JavaScript output
 
@@ -82,26 +66,12 @@ Write the new file next to the original YAML file, with the same base name but `
 
 ### Conversion example
 
-This YAML:
-
 ```yaml
 config:
   target: https://api.example.com
   phases:
     - duration: 60
       arrivalRate: 5
-  http:
-    timeout: 10
-before:
-  flow:
-    - post:
-        url: "/auth/login"
-        json:
-          username: "testuser"
-          password: "testpass"
-        capture:
-          - json: "$.token"
-            as: "authToken"
 scenarios:
   - name: "Browse products"
     flow:
@@ -111,47 +81,25 @@ scenarios:
             Authorization: "Bearer {{ authToken }}"
 ```
 
-Becomes this TypeScript:
+Becomes:
 
 ```typescript
 import type { Config, Scenario } from "artillery";
 
 export const config: Config = {
   target: "https://api.example.com",
-  phases: [
-    { duration: 60, arrivalRate: 5 },
-  ],
-  http: {
-    timeout: 10,
-  },
-};
-
-export const before = {
-  flow: [
-    {
-      post: {
-        url: "/auth/login",
-        json: { username: "testuser", password: "testpass" },
-        capture: [{ json: "$.token", as: "authToken" }],
-      },
-    },
-  ],
+  phases: [{ duration: 60, arrivalRate: 5 }],
 };
 
 export const scenarios: Scenario[] = [
   {
     name: "Browse products",
-    flow: [
-      {
-        get: {
-          url: "/products",
-          headers: { Authorization: "Bearer {{ authToken }}" },
-        },
-      },
-    ],
+    flow: [{ get: { url: "/products", headers: { Authorization: "Bearer {{ authToken }}" } } }],
   },
 ];
 ```
+
+Note: Artillery template expressions like `{{ authToken }}` stay as literal strings. The `processor` field (if present) is also kept as-is (string reference).
 
 ## Step 5: Verify
 
